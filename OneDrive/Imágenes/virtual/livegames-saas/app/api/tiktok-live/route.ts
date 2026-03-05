@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     } else if (action === 'status') {
       // Verificar estado de la conexión
       const connection = activeConnections.get(sessionId);
-      const isConnected = connection ? connection.getState().isConnected : false;
+      const isConnected = connection ? true : false;
 
       return NextResponse.json({ 
         success: true, 
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
   const connection = activeConnections.get(sessionId);
   
   return NextResponse.json({ 
-    connected: connection ? connection.getState().isConnected : false,
+    connected: connection ? true : false,
     sessionId
   });
 }
