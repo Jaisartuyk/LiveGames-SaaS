@@ -6,6 +6,7 @@ import Roulette from "./games/Roulette";
 import Challenge from "./games/Challenge";
 import Trivia from "./games/Trivia";
 import Music from "./games/Music";
+import Football from "./games/Football";
 import Editor from "./Editor";
 
 // --- COMPONENTS ---
@@ -264,6 +265,7 @@ export default function LiveGamesApp() {
           <div className={`nav-item c-purple ${activePage === 'trivia' ? 'active' : ''}`} onClick={() => goPage('trivia')}><span className="nav-icon">❓</span>Trivia</div>
           <div className={`nav-item c-cyan ${activePage === 'challenge' ? 'active' : ''}`} onClick={() => goPage('challenge')}><span className="nav-icon">🎯</span>Reto del Día</div>
           <div className={`nav-item c-green ${activePage === 'music' ? 'active' : ''}`} onClick={() => goPage('music')}><span className="nav-icon">🎵</span>Adivina la Canción</div>
+          <div className={`nav-item c-purple ${activePage === 'football' ? 'active' : ''}`} onClick={() => goPage('football')}><span className="nav-icon">⚽</span>Resúmenes de Fútbol</div>
           <div className="nav-divider"></div>
           <div className={`nav-item c-gray ${activePage === 'editor' ? 'active' : ''}`} onClick={() => goPage('editor')}><span className="nav-icon">✏️</span>Editor</div>
         </nav>
@@ -376,6 +378,10 @@ export default function LiveGamesApp() {
 
           {activePage === 'music' && (
             <Music items={songs} idx={songIdx} setIdx={setSongIdx} timerSeconds={timerMusic} onShowEditor={() => goPage('editor')} triggerConfetti={triggerConfetti} />
+          )}
+
+          {activePage === 'football' && (
+            <Football />
           )}
 
           {activePage === 'editor' && (
