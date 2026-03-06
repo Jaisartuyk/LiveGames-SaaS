@@ -25,5 +25,8 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/tiktok*.txt',
+  matcher: [
+    '/tiktokHPSmLS5D3VaWKXS6ucTZSe7M3Jbkm3IA.txt',
+    '/tiktokajJY76tTTIDA1isLHix7qoBpIKh2i7vT.txt'
+  ],
 };
