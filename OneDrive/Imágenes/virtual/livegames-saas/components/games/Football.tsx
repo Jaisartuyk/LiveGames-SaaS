@@ -78,7 +78,7 @@ export default function Football() {
       </div>
 
       {/* Buscador */}
-      <form onSubmit={handleSearch} style={{ marginBottom: '30px' }}>
+      <form onSubmit={handleSearch} style={{ marginBottom: '20px' }}>
         <div style={{ display: 'flex', gap: '10px', maxWidth: '600px' }}>
           <input
             type="text"
@@ -113,6 +113,29 @@ export default function Football() {
           </button>
         </div>
       </form>
+
+      {/* Botón Modo Presentación */}
+      <div style={{ marginBottom: '30px' }}>
+        <button
+          onClick={() => window.open('/present?mode=football', '_blank', 'width=1920,height=1080')}
+          style={{
+            padding: '12px 24px',
+            background: 'linear-gradient(135deg, #9b5de5, #f72585)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(155, 93, 229, 0.3)',
+            transition: 'transform 0.2s'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          📺 Abrir Modo Presentación
+        </button>
+      </div>
 
       {/* Búsquedas rápidas */}
       <div style={{ marginBottom: '30px' }}>

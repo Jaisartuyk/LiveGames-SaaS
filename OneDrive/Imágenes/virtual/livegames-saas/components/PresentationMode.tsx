@@ -15,6 +15,16 @@ export default function PresentationMode() {
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [showInstrumental, setShowInstrumental] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [mode, setMode] = useState<'music' | 'football'>('music');
+
+  // Detectar modo desde URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const modeParam = params.get('mode');
+    if (modeParam === 'football') {
+      setMode('football');
+    }
+  }, []);
 
   // Sincronizar con el estado del juego principal
   useEffect(() => {
@@ -108,7 +118,7 @@ export default function PresentationMode() {
           fontSize: '120px',
           marginBottom: '20px'
         }}>
-          🎤
+          {mode === 'football' ? '⚽' : '🎤'}
         </div>
         <div style={{
           fontSize: '48px',
@@ -121,7 +131,7 @@ export default function PresentationMode() {
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
         }}>
-          CANTA CONMIGO
+          {mode === 'football' ? 'RESÚMENES DE FÚTBOL' : 'CANTA CONMIGO'}
         </div>
         <div style={{
           fontSize: '20px',
@@ -130,7 +140,9 @@ export default function PresentationMode() {
           textAlign: 'center',
           maxWidth: '600px'
         }}>
-          Esperando que se seleccione una canción...
+          {mode === 'football' 
+            ? 'Esperando que se seleccione un partido...' 
+            : 'Esperando que se seleccione una canción...'}
         </div>
       </div>
     );
