@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, Outfit } from "next/font/google";
 import "./globals.css";
+import { StreamingProvider } from "@/contexts/StreamingContext";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -26,7 +27,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${bebasNeue.variable} ${outfit.variable} antialiased`}>
-        {children}
+        <StreamingProvider>
+          {children}
+        </StreamingProvider>
       </body>
     </html>
   );

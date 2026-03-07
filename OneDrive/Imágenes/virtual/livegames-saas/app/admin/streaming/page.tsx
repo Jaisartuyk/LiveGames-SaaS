@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { io, Socket } from 'socket.io-client';
-import SimplePeer from 'simple-peer';
+import { useStreaming } from '@/contexts/StreamingContext';
 
 interface Stream {
   id: string;
@@ -15,17 +14,21 @@ interface Stream {
 
 export default function StreamingAdmin() {
   const [streams, setStreams] = useState<Stream[]>([]);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [currentStream, setCurrentStream] = useState<Stream | null>(null);
   const [streamTitle, setStreamTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<any>(null);
-  const [viewersCount, setViewersCount] = useState(0);
   
   const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const socketRef = useRef<Socket | null>(null);
-  const peersRef = useRef<Map<string, SimplePeer.Instance>>(new Map());
+  
+  // Usar el contexto global de streaming
+  const {
+    isStreaming,
+    currentStream,
+    viewersCount,
+    mediaStream,
+    startStreaming: startStreamingGlobal,
+    stopStreaming: stopStreamingGlobal
+  } = useStreaming();
 
   useEffect(() => {
     // Verificar sesión
@@ -35,6 +38,13 @@ export default function StreamingAdmin() {
 
     loadStreams();
   }, []);
+
+  // Actualizar preview cuando cambie el mediaStream
+  useEffect(() => {
+    if (videoRef.current && mediaStream) {
+      videoRef.current.srcObject = mediaStream;
+    }
+  }, [mediaStream]);
 
   const loadStreams = async () => {
     const { data, error } = await supabase
@@ -48,41 +58,6 @@ export default function StreamingAdmin() {
     }
   };
 
-  const createPeerConnection = (viewerId: string, stream: MediaStream) => {
-    const peer = new SimplePeer({
-      initiator: true,
-      trickle: true,
-      stream: stream,
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' }
-        ]
-      }
-    });
-
-    peer.on('signal', (signal) => {
-      // Enviar offer al viewer
-      socketRef.current?.emit('offer', {
-        roomId: currentStream?.id,
-        offer: signal,
-        viewerId
-      });
-    });
-
-    peer.on('error', (err) => {
-      console.error('Error en peer connection:', err);
-      peersRef.current.delete(viewerId);
-    });
-
-    peer.on('close', () => {
-      console.log('Peer connection cerrada:', viewerId);
-      peersRef.current.delete(viewerId);
-    });
-
-    peersRef.current.set(viewerId, peer);
-  };
-
   const startStreaming = async () => {
     if (!streamTitle.trim()) {
       alert('Por favor ingresa un título para la transmisión');
@@ -92,75 +67,9 @@ export default function StreamingAdmin() {
     setLoading(true);
 
     try {
-      // Solicitar permiso para compartir pantalla
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { width: 1920, height: 1080 },
-        audio: true
-      });
-
-      mediaStreamRef.current = stream;
-
-      // Mostrar preview
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-
-      // Crear transmisión en la base de datos
-      const response = await fetch('/api/stream/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: streamTitle,
-          userId: session?.user?.id
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setCurrentStream(data.stream);
-        setIsStreaming(true);
-        loadStreams();
-        
-        // Conectar a WebSocket
-        const socket = io();
-        socketRef.current = socket;
-
-        // Unirse a la sala como streamer
-        socket.emit('join-room', { roomId: data.stream.id, isStreamer: true });
-
-        // Escuchar cuando un viewer se une
-        socket.on('viewer-joined', ({ viewerId }: { viewerId: string }) => {
-          console.log('Nuevo viewer:', viewerId);
-          createPeerConnection(viewerId, stream);
-        });
-
-        // Recibir respuestas de viewers
-        socket.on('answer', ({ answer, viewerId }: { answer: any; viewerId: string }) => {
-          const peer = peersRef.current.get(viewerId);
-          if (peer) {
-            peer.signal(answer);
-          }
-        });
-
-        // Recibir ICE candidates
-        socket.on('ice-candidate', ({ candidate, senderId }: { candidate: any; senderId: string }) => {
-          const peer = peersRef.current.get(senderId);
-          if (peer) {
-            peer.signal(candidate);
-          }
-        });
-
-        // Actualizar conteo de viewers
-        socket.on('viewer-count', (count: number) => {
-          setViewersCount(count);
-        });
-        
-        // Detectar cuando el usuario deja de compartir
-        stream.getVideoTracks()[0].onended = () => {
-          stopStreaming();
-        };
-      }
+      await startStreamingGlobal(streamTitle, session?.user?.id);
+      setStreamTitle('');
+      loadStreams();
     } catch (error) {
       console.error('Error starting stream:', error);
       alert('Error al iniciar transmisión. Asegúrate de dar permisos para compartir pantalla.');
@@ -170,35 +79,7 @@ export default function StreamingAdmin() {
   };
 
   const stopStreaming = async () => {
-    // Cerrar todas las conexiones peer
-    peersRef.current.forEach((peer) => {
-      peer.destroy();
-    });
-    peersRef.current.clear();
-
-    // Desconectar WebSocket
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
-
-    // Detener media stream
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach(track => track.stop());
-      mediaStreamRef.current = null;
-    }
-
-    // Desactivar transmisión en la base de datos
-    if (currentStream) {
-      await fetch(`/api/stream/${currentStream.id}`, {
-        method: 'DELETE'
-      });
-    }
-
-    setIsStreaming(false);
-    setCurrentStream(null);
-    setStreamTitle('');
-    setViewersCount(0);
+    await stopStreamingGlobal();
     loadStreams();
   };
 
@@ -343,7 +224,9 @@ export default function StreamingAdmin() {
                   padding: '10px',
                   border: '1px solid #ddd',
                   borderRadius: '8px',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  color: '#1a1a1a',
+                  background: 'white'
                 }}
               />
               <button
