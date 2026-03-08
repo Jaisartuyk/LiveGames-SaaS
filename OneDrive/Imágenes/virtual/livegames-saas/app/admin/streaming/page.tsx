@@ -46,6 +46,11 @@ export default function StreamingAdmin() {
     }
   }, [mediaStream]);
 
+  // Debug: ver estado actual
+  useEffect(() => {
+    console.log('Estado streaming:', { isStreaming, currentStream, viewersCount });
+  }, [isStreaming, currentStream, viewersCount]);
+
   const loadStreams = async () => {
     const { data, error } = await supabase
       .from('streams')
@@ -205,46 +210,60 @@ export default function StreamingAdmin() {
           />
 
           {/* URL para compartir */}
-          <div style={{
-            background: '#f5f5f5',
-            padding: '15px',
-            borderRadius: '10px',
-            marginBottom: '15px'
-          }}>
-            <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px', fontWeight: 600 }}>
-              URL para compartir:
-            </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input
-                type="text"
-                value={`${window.location.origin}/watch/${currentStream?.id}`}
-                readOnly
-                style={{
-                  flex: 1,
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  color: '#1a1a1a',
-                  background: 'white'
-                }}
-              />
-              <button
-                onClick={() => copyWatchUrl(currentStream!.id)}
-                style={{
-                  padding: '10px 20px',
-                  background: '#667eea',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 600
-                }}
-              >
-                📋 Copiar
-              </button>
+          {currentStream ? (
+            <div style={{
+              background: '#f5f5f5',
+              padding: '15px',
+              borderRadius: '10px',
+              marginBottom: '15px'
+            }}>
+              <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px', fontWeight: 600 }}>
+                URL para compartir:
+              </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <input
+                  type="text"
+                  value={`${window.location.origin}/watch/${currentStream.id}`}
+                  readOnly
+                  style={{
+                    flex: 1,
+                    padding: '10px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: '#1a1a1a',
+                    background: 'white'
+                  }}
+                />
+                <button
+                  onClick={() => copyWatchUrl(currentStream.id)}
+                  style={{
+                    padding: '10px 20px',
+                    background: '#667eea',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 600
+                  }}
+                >
+                  📋 Copiar
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={{
+              background: '#fff3cd',
+              padding: '15px',
+              borderRadius: '10px',
+              marginBottom: '15px',
+              border: '1px solid #ffc107'
+            }}>
+              <p style={{ fontSize: '14px', color: '#856404', margin: 0 }}>
+                ⚠️ Generando URL de transmisión...
+              </p>
+            </div>
+          )}
 
           <button
             onClick={stopStreaming}

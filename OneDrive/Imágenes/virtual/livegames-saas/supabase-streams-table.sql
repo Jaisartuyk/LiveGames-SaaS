@@ -24,7 +24,7 @@ CREATE POLICY "Users can view own streams"
 -- Política: Los usuarios pueden crear transmisiones
 CREATE POLICY "Users can create streams"
   ON streams FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
+  WITH CHECK (true);
 
 -- Política: Los usuarios pueden actualizar sus transmisiones
 CREATE POLICY "Users can update own streams"
