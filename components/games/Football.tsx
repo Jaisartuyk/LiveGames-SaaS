@@ -18,6 +18,36 @@ export default function Football() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Cargar estado de localStorage al iniciar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedQuery = localStorage.getItem('livegames_football_searchQuery');
+      const savedVideos = localStorage.getItem('livegames_football_videos');
+      const savedSelected = localStorage.getItem('livegames_football_selectedVideo');
+
+      if (savedQuery) setSearchQuery(savedQuery);
+      if (savedVideos) {
+        try { setVideos(JSON.parse(savedVideos)); } catch (e) {}
+      }
+      if (savedSelected) {
+        try { setSelectedVideo(JSON.parse(savedSelected)); } catch (e) {}
+      }
+    }
+  }, []);
+
+  // Guardar estado en localStorage al cambiar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('livegames_football_searchQuery', searchQuery);
+      localStorage.setItem('livegames_football_videos', JSON.stringify(videos));
+      if (selectedVideo) {
+        localStorage.setItem('livegames_football_selectedVideo', JSON.stringify(selectedVideo));
+      } else {
+        localStorage.removeItem('livegames_football_selectedVideo');
+      }
+    }
+  }, [searchQuery, videos, selectedVideo]);
+
   // Sincronizar video seleccionado con el estado global
   useEffect(() => {
     if (selectedVideo) {

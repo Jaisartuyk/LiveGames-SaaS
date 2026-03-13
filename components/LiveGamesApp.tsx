@@ -54,6 +54,13 @@ export default function LiveGamesApp() {
   const [authLoading, setAuthLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(true);
   const [activePage, setActivePage] = useState("home");
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedPage = localStorage.getItem('livegames_activePage');
+      if (savedPage) setActivePage(savedPage);
+    }
+  }, []);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confettiActive, setConfettiActive] = useState(false);
   const [toastMsg, setToastMsg] = useState({ msg: "", show: false });
@@ -244,7 +251,7 @@ export default function LiveGamesApp() {
     );
   }
 
-  const goPage = (page: string) => { setActivePage(page); setSidebarOpen(false); };
+  const goPage = (page: string) => { setActivePage(page); localStorage.setItem('livegames_activePage', page); setSidebarOpen(false); };
 
   return (
     <div id="app" className="visible">
