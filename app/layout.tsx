@@ -24,6 +24,11 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "LiveGames IA",
   },
+  icons: {
+    icon: "/icons/icon-192x192.png",
+    shortcut: "/icons/icon-192x192.png",
+    apple: "/icons/icon-512x512.png",
+  },
 };
 
 export default function RootLayout({
